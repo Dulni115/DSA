@@ -1,0 +1,290 @@
+public class DoublyLinkedList<T> {
+    private Node<T> head;
+    private Node<T> tail;
+    private int size;
+    
+    private static class Node<T> {
+        T data;
+        Node<T> prev;
+        Node<T> next;
+        
+        Node(T data) {
+            this.data = data;
+            this.prev = null;
+            this.next = null;
+        }
+    }
+    
+    public DoublyLinkedList() {
+        head = tail = null;
+        size = 0;
+    }
+    
+    // Add to the beginning
+    public void addFirst(T data) {
+        Node<T> newNode = new Node<>(data);
+        
+        if (isEmpty()) {
+            head = tail = newNode;
+        } else {
+            newNode.next = head;
+            head.prev = newNode;
+            head = newNode;
+        }
+        size++;
+    }
+    
+    // Add to the end
+    public void addLast(T data) {
+        Node<T> newNode = new Node<>(data);
+        
+        if (isEmpty()) {
+            head = tail = newNode;
+        } else {
+            tail.next = newNode;
+            newNode.prev = tail;
+            tail = newNode;
+        }
+        size++;
+    }
+    
+    // Add at specific index
+    public void add(int index, T data) {
+        if (index < 0 || index > size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+        
+        if (index == 0) {
+            addFirst(data);
+        } else if (index == size) {
+            addLast(data);
+        } else {
+            Node<T> newNode = new Node<>(data);
+            Node<T> current = getNode(index);
+            
+            newNode.prev = current.prev;
+            newNode.next = current;
+            current.prev.next = newNode;
+            current.prev = newNode;
+            
+            size++;
+        }
+    }
+    
+    // Remove from beginning
+    public T removeFirst() {
+        if (isEmpty()) {
+            throw new IllegalStateException("List is empty");
+        }
+        
+        T data = head.data;
+        
+        if (head == tail) {
+            head = tail = null;
+        } else {
+            head = head.next;
+            head.prev = null;
+        }
+        
+        size--;
+        return data;
+    }
+    
+    // Remove from end
+    public T removeLast() {
+        if (isEmpty()) {
+            throw new IllegalStateException("List is empty");
+        }
+        
+        T data = tail.data;
+        
+        if (head == tail) {
+            head = tail = null;
+        } else {
+            tail = tail.prev;
+            tail.next = null;
+        }
+        
+        size--;
+        return data;
+    }
+    
+    // Remove at specific index
+    public T remove(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+        
+        if (index == 0) {
+            return removeFirst();
+        } else if (index == size - 1) {
+            return removeLast();
+        } else {
+            Node<T> current = getNode(index);
+            T data = current.data;
+            
+            current.prev.next = current.next;
+            current.next.prev = current.prev;
+            
+            size--;
+            return data;
+        }
+    }
+    
+    // Get element at index
+    public T get(int index) {
+        return getNode(index).data;
+    }
+    
+    // Set element at index
+    public void set(int index, T data) {
+        getNode(index).data = data;
+    }
+    
+    // Helper method to get node at index
+    private Node<T> getNode(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+        
+        Node<T> current;
+        // Optimize traversal by starting from closest end
+        if (index < size / 2) {
+            current = head;
+            for (int i = 0; i < index; i++) {
+                current = current.next;
+            }
+        } else {
+            current = tail;
+            for (int i = size - 1; i > index; i--) {
+                current = current.prev;
+            }
+        }
+        
+        return current;
+    }
+    
+    public boolean contains(T data) {
+        Node<T> current = head;
+        while (current != null) {
+            if (current.data.equals(data)) {
+                return true;
+            }
+            current = current.next;
+        }
+        return false;
+    }
+    
+    public int indexOf(T data) {
+        Node<T> current = head;
+        int index = 0;
+        while (current != null) {
+            if (current.data.equals(data)) {
+                return index;
+            }
+            current = current.next;
+            index++;
+        }
+        return -1;
+    }
+    
+    public int lastIndexOf(T data) {
+        Node<T> current = tail;
+        int index = size - 1;
+        while (current != null) {
+            if (current.data.equals(data)) {
+                return index;
+            }
+            current = current.prev;
+            index--;
+        }
+        return -1;
+    }
+    
+    public boolean isEmpty() {
+        return size == 0;
+    }
+    
+    public int size() {
+        return size;
+    }
+    
+    public void clear() {
+        // Help garbage collection by clearing all links
+        Node<T> current = head;
+        while (current != null) {
+            Node<T> next = current.next;
+            current.prev = null;
+            current.next = null;
+            current = next;
+        }
+        head = tail = null;
+        size = 0;
+    }
+    
+    @Override
+    public String toString() {
+        if (isEmpty()) {
+            return "List is empty";
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        Node<T> current = head;
+        sb.append("DoublyLinkedList: [");
+        
+        while (current != null) {
+            sb.append(current.data);
+            if (current.next != null) {
+                sb.append(" <-> ");
+            }
+            current = current.next;
+        }
+        
+        sb.append("] (size=").append(size).append(")");
+        return sb.toString();
+    }
+    
+    // Additional utility methods
+    public void reverse() {
+        if (size <= 1) {
+            return;
+        }
+        
+        Node<T> current = head;
+        Node<T> temp = null;
+        
+        // Swap head and tail
+        head = tail;
+        tail = current;
+        
+        // Reverse all links
+        while (current != null) {
+            temp = current.prev;
+            current.prev = current.next;
+            current.next = temp;
+            current = current.prev;
+        }
+    }
+    
+    // Forward traversal
+    public void traverseForward() {
+        Node<T> current = head;
+        System.out.print("Forward: ");
+        while (current != null) {
+            System.out.print(current.data + " ");
+            current = current.next;
+        }
+        System.out.println();
+    }
+    
+    // Backward traversal
+    public void traverseBackward() {
+        Node<T> current = tail;
+        System.out.print("Backward: ");
+        while (current != null) {
+            System.out.print(current.data + " ");
+            current = current.prev;
+        }
+        System.out.println();
+    }
+}
