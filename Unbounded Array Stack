@@ -1,0 +1,48 @@
+class UnboundedArrayStack:
+    def __init__(self, initial_capacity=4):
+        self.capacity = initial_capacity
+        self.array = [None] * self.capacity
+        self.top_index = -1
+    
+    def push(self, x):
+        """Push with dynamic resizing"""
+        # Double capacity if full
+        if self.top_index == self.capacity - 1:
+            self._resize(self.capacity * 2)
+        
+        self.top_index += 1
+        self.array[self.top_index] = x
+    
+    def pop(self):
+        """Pop with dynamic shrinking"""
+        if self.is_empty():
+            return None
+        
+        result = self.array[self.top_index]
+        self.top_index -= 1
+        
+        # Shrink if only 25% capacity used
+        if self.top_index < self.capacity // 4 and self.capacity > 4:
+            self._resize(self.capacity // 2)
+        
+        return result
+    
+    def peek(self):
+        if self.is_empty():
+            return None
+        return self.array[self.top_index]
+    
+    def _resize(self, new_capacity):
+        """Resize the array to new capacity"""
+        new_array = [None] * new_capacity
+        for i in range(self.top_index + 1):
+            new_array[i] = self.array[i]
+        
+        self.array = new_array
+        self.capacity = new_capacity
+    
+    def is_empty(self):
+        return self.top_index == -1
+    
+    def size(self):
+        return self.top_index + 1
